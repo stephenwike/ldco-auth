@@ -11,6 +11,9 @@ export async function POST(req: Request) {
         }
 
         const client = await clientPromise;
+        if (!client) {
+            return NextResponse.json({ message: 'Database connection failed' }, { status: 500 });
+        }
         const db = client.db('ldco');
         const existing = await db.collection('users').findOne({ email });
 

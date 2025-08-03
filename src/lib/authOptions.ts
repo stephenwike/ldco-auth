@@ -18,6 +18,10 @@ export const authOptions: AuthOptions = {
                 }
 
                 const client = await clientPromise;
+                if (!client) {
+                    console.log('❌ Database client is undefined');
+                    return null;
+                }
                 const db = client.db('ldco-auth');
                 const user = await db.collection('users').findOne({ email: credentials.email });
 
@@ -60,9 +64,9 @@ export const authOptions: AuthOptions = {
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                token.id = user.id;
-                token.email = user.email;
-                token.name = user.name;
+                token.id = user.id as string;
+                token.email = user.email as string;
+                token.name = user.name as string;
             }
             return token;
         },

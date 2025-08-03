@@ -1,6 +1,7 @@
 import { authOptions } from '@/lib/authOptions';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { NextResponse } from 'next/server';
+import type { Session } from 'next-auth';
 
 export async function GET(request: Request) {
     const origin = request.headers.get('origin');
@@ -10,7 +11,7 @@ export async function GET(request: Request) {
         'https://profile.linedancecolorado.com',
     ];
 
-    const session = await getServerSession(authOptions);
+    const session: Session | null = await getServerSession(authOptions);
 
     const response = session?.user?.id
         ? NextResponse.json({

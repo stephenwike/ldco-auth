@@ -67,7 +67,11 @@ export default function AuthPage() {
         }
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      if (err instanceof Error) {
+        setError(`An unexpected error occurred: ${err.message}`);
+      } else {
+        setError('An unexpected error occurred');
+      }
     } finally {
       setLoading(false);
     }
