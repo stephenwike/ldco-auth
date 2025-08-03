@@ -54,7 +54,7 @@ export const authOptions: AuthOptions = {
                 sameSite: 'none',
                 secure: true,
                 path: '/',
-                domain: '.localhost',
+                domain: '.linedancecolorado.com',
             }
         }
     },
