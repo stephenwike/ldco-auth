@@ -22,7 +22,7 @@ export const authOptions: AuthOptions = {
                     console.log('❌ Database client is undefined');
                     return null;
                 }
-                const db = client.db('ldco-auth');
+                const db = client.db('ldco');
                 const user = await db.collection('users').findOne({ email: credentials.email });
 
                 if (!user) {
