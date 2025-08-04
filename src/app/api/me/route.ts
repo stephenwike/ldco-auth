@@ -7,8 +7,10 @@ export async function GET(request: Request) {
     const origin = request.headers.get('origin');
 
     const allowedOrigins = [
-        'https://profile.localhost:44300',
         'https://profile.linedancecolorado.com',
+        'https://profile.localhost:44300',
+        'https://dances.linedancecolorado.com',
+        'https://dances.localhost:44302',
     ];
 
     const session: Session | null = await getServerSession(authOptions);
