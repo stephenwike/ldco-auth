@@ -1,6 +1,15 @@
 import clientPromise from '@/lib/mongo';
 import { hash } from 'bcrypt';
+import { ObjectId } from 'mongodb';
 import { NextResponse } from 'next/server';
+
+interface RegisterUser {
+    _id: string;
+    email: string;
+    name: string;
+    password: string;
+    createdAt: Date;
+}
 
 export async function POST(req: Request) {
     try {
@@ -23,13 +32,14 @@ export async function POST(req: Request) {
 
         const hashed = await hash(password, 10);
         const newUser = {
+            _id: new ObjectId().toString(),
             email,
             name,
             password: hashed,
             createdAt: new Date(),
         };
 
-        await db.collection('users').insertOne(newUser);
+        await db.collection<RegisterUser>('users').insertOne(newUser);
         return NextResponse.json({ message: 'User created successfully' });
     } catch (error) {
         console.error('[register]', error);
