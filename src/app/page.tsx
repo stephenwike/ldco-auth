@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
@@ -27,7 +27,6 @@ export default function AuthPage() {
 
     try {
       if (mode === 'signup') {
-        // Registration request
         const res = await fetch('/api/register', {
           method: 'POST',
           body: JSON.stringify({ name, email, password }),
@@ -40,12 +39,11 @@ export default function AuthPage() {
           return;
         }
 
-        // Auto login after successful signup
         const signInRes = await signIn('credentials', {
           email,
           password,
           redirect: true,
-          callbackUrl: '/auth',
+          callbackUrl: '/',
         });
 
         if (!signInRes?.ok) {
@@ -53,7 +51,6 @@ export default function AuthPage() {
         }
 
       } else {
-        // Sign in request
         const result = await signIn('credentials', {
           email,
           password,
@@ -63,7 +60,10 @@ export default function AuthPage() {
         if (result?.error) {
           setError('Invalid credentials');
         } else {
-          router.push('/');
+          // Get Route from the environment or a default
+          const redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL || 'https://profile.localhost:44300';
+          // Redirect to the specified URL
+          router.push(redirectUrl);
         }
       }
     } catch (err) {
@@ -75,6 +75,11 @@ export default function AuthPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSignOut = async () => {
+    await fetch('/api/logout', { method: 'POST' });
+    signOut({ callbackUrl: '/' });
   };
 
   return (
@@ -126,6 +131,15 @@ export default function AuthPage() {
         disabled={loading}
       >
         Sign in with GitHub
+      </button>
+
+      <hr style={{ margin: '2rem 0' }} />
+
+      <button
+        onClick={handleSignOut}
+        style={{ width: '100%' }}
+      >
+        Sign Out
       </button>
     </main>
   );
