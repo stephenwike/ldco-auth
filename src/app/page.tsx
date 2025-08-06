@@ -125,7 +125,7 @@ export default function AuthPage() {
 
       <hr style={{ margin: '2rem 0' }} />
 
-      <button
+      {/* <button
         onClick={() => signIn('github')}
         style={{ width: '100%' }}
         disabled={loading}
@@ -133,7 +133,7 @@ export default function AuthPage() {
         Sign in with GitHub
       </button>
 
-      <hr style={{ margin: '2rem 0' }} />
+      <hr style={{ margin: '2rem 0' }} /> */}
 
       <button
         onClick={handleSignOut}
