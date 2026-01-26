@@ -6,12 +6,21 @@ import type { Session } from 'next-auth';
 export async function GET(request: Request) {
     const origin = request.headers.get('origin');
 
-    const allowedOrigins = [
+    const defaultAllowedOrigins = [
         'https://profile.linedancecolorado.com',
         'https://profile.localhost:44300',
         'https://dances.linedancecolorado.com',
         'https://dances.localhost:44302',
     ];
+
+    // Optional: extend allowed origins without code changes.
+    // Example: ALLOWED_ORIGINS="https://app.linedancecolorado.com,https://localhost:3000"
+    const envAllowed = (process.env.ALLOWED_ORIGINS ?? '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+
+    const allowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...envAllowed]));
 
     const session: Session | null = await getServerSession(authOptions);
 
