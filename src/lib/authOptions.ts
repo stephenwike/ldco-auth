@@ -20,7 +20,9 @@ export const authOptions: AuthOptions = {
         if (!credentials?.email || !credentials.password) return null;
 
         const client = await clientPromise;
+        if (!client) return null;
         const db = client.db("ldco");
+
         const user = await db.collection("users").findOne({ email: credentials.email });
 
         if (!user) return null;
