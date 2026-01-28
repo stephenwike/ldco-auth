@@ -37,7 +37,7 @@ export default function AuthForm({
         // Minimal requirement: API expects name, email, password.
         const safeName = name.trim() || email.split("@")[0] || "New User";
 
-        const res = await fetch(`/api/alpha/allowed?email=${encodeURIComponent(email)}`);
+        const res = await fetch(`/api/allowed?email=${encodeURIComponent(email)}`);
         const data = await res.json();
 
         if (!data.allowed) {
@@ -59,7 +59,7 @@ export default function AuthForm({
       }
 
       // before signIn(...)
-      const res = await fetch(`/api/alpha/allowed?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`/api/allowed?email=${encodeURIComponent(email)}`);
       const data = await res.json();
 
       if (!data.allowed) {
