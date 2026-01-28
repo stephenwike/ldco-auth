@@ -3,6 +3,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import clientPromise from "@/lib/mongo";
 import bcrypt from "bcrypt";
 
+// ✅ ALPHA: import allowlist checker
+import { isAlphaAllowed } from "@/lib/alphaAllowList";
+
 const isProd = process.env.NODE_ENV === "production";
 
 // Optional: allow overriding for staging
@@ -19,11 +22,16 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
 
+        // ✅ ALPHA: block login for non-approved emails
+        if (!isAlphaAllowed(credentials.email)) return null;
+
         const client = await clientPromise;
         if (!client) return null;
         const db = client.db("ldco");
 
-        const user = await db.collection("users").findOne({ email: credentials.email });
+        const user = await db
+          .collection("users")
+          .findOne({ email: credentials.email });
 
         if (!user) return null;
 
@@ -63,6 +71,9 @@ export const authOptions: AuthOptions = {
         token.id = user.id as string;
         token.email = user.email as string;
         token.name = user.name as string;
+
+        // ✅ ALPHA (optional): expose flag in token for middleware/UI if needed
+        token.alphaAllowed = true;
       }
       return token;
     },
@@ -72,7 +83,10 @@ export const authOptions: AuthOptions = {
           id: token.id as string,
           email: token.email as string,
           name: token.name as string,
-        };
+        } as typeof session.user;
+
+        // ✅ ALPHA (optional): expose flag in session for UI if you use it
+        (session as any).alphaAllowed = (token as any).alphaAllowed ?? false;
       }
       return session;
     },
