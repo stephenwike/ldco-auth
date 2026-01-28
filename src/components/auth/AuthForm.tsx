@@ -37,17 +37,34 @@ export default function AuthForm({
         // Minimal requirement: API expects name, email, password.
         const safeName = name.trim() || email.split("@")[0] || "New User";
 
-        const res = await fetch("/api/register", {
+        const res = await fetch(`/api/alpha/allowed?email=${encodeURIComponent(email)}`);
+        const data = await res.json();
+
+        if (!data.allowed) {
+          window.location.href = "/not-approved";
+          return;
+        }
+
+        const signupRes  = await fetch("/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: safeName, email, password }),
         });
 
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          setError(data?.message || "Registration failed");
+        const signupData = await signupRes.json().catch(() => ({}));
+        if (!signupRes.ok) {
+          setError(signupData?.message || "Registration failed");
           return;
         }
+      }
+
+      // before signIn(...)
+      const res = await fetch(`/api/alpha/allowed?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+
+      if (!data.allowed) {
+        window.location.href = "/not-approved";
+        return;
       }
 
       const result = await signIn("credentials", {
