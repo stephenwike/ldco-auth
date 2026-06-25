@@ -10,10 +10,13 @@ type Mode = "signin" | "signup";
 export default function AuthForm({
   mode,
   redirectUrl,
+  returnTo,
 }: {
   mode: Mode;
   /** Where to send the user after successful sign-in/sign-up */
   redirectUrl: string;
+  /** Original return_to param to preserve across login/signup toggle */
+  returnTo?: string;
 }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -86,7 +89,8 @@ export default function AuthForm({
     }
   };
 
-  const otherHref = isSignup ? "/login" : "/signup";
+  const returnToParam = returnTo ? `?return_to=${encodeURIComponent(returnTo)}` : '';
+  const otherHref = isSignup ? `/login${returnToParam}` : `/signup${returnToParam}`;
   const otherLabel = isSignup ? "Already have an account? Sign in" : "Need an account? Sign up";
 
   return (

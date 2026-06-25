@@ -1,9 +1,10 @@
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import clientPromise from "@/lib/mongo";
 import bcrypt from "bcrypt";
+import { ObjectId } from "mongodb";
 
-// ✅ ALPHA: import allowlist checker
 import { isAlphaAllowed } from "@/lib/alphaAllowList";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -13,6 +14,14 @@ const cookieDomain = process.env.NEXTAUTH_COOKIE_DOMAIN;
 
 export const authOptions: AuthOptions = {
   providers: [
+    ...(process.env.GOOGLE_CLIENT_ID
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+          }),
+        ]
+      : []),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -66,13 +75,36 @@ export const authOptions: AuthOptions = {
   session: { strategy: "jwt" },
 
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        return isAlphaAllowed(user.email ?? undefined);
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
+      if (user && account?.provider === 'google') {
+        const client = await clientPromise;
+        if (client) {
+          const db = client.db('ldco');
+          let dbUser = await db.collection('users').findOne({ email: user.email });
+          if (!dbUser) {
+            const result = await db.collection('users').insertOne({
+              email: user.email,
+              name: user.name,
+              googleId: user.id,
+              createdAt: new Date(),
+            });
+            dbUser = { _id: result.insertedId, email: user.email, name: user.name };
+          }
+          token.id = dbUser._id.toString();
+          token.email = dbUser.email as string;
+          token.name = (dbUser.name ?? user.name) as string;
+        }
+        token.alphaAllowed = true;
+      } else if (user) {
         token.id = user.id as string;
         token.email = user.email as string;
         token.name = user.name as string;
-
-        // ✅ ALPHA (optional): expose flag in token for middleware/UI if needed
         token.alphaAllowed = true;
       }
       return token;
