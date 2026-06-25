@@ -52,10 +52,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'server_error' }, { status: 500 });
   }
 
-  const user = await mongo
-    .db('ldco')
-    .collection('users')
-    .findOne({ _id: userId as any });
+  const db = mongo.db('ldco');
+  let user = await db.collection('users').findOne({ _id: userId as any });
+  if (!user) {
+    try {
+      const { ObjectId } = await import('mongodb');
+      user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+    } catch { /* not a valid ObjectId string */ }
+  }
 
   if (!user) {
     return NextResponse.json({ error: 'server_error' }, { status: 500 });

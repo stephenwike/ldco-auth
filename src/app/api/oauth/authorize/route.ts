@@ -33,7 +33,9 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id || prompt === 'login') {
-    const returnTo = req.nextUrl.pathname + '?' + params.toString();
+    const cleanParams = new URLSearchParams(params);
+    cleanParams.delete('prompt');
+    const returnTo = req.nextUrl.pathname + '?' + cleanParams.toString();
     const loginUrl = new URL('/login', req.nextUrl.origin);
     loginUrl.searchParams.set('return_to', returnTo);
     return NextResponse.redirect(loginUrl);

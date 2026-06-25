@@ -81,7 +81,10 @@ export default function AuthForm({
   };
 
   function handleGoogleSignIn() {
-    signIn("google", { callbackUrl: redirectUrl });
+    if (returnTo) {
+      document.cookie = `oauth_return_to=${encodeURIComponent(returnTo)}; path=/; max-age=300; samesite=lax`;
+    }
+    signIn("google", { callbackUrl: "/" });
   }
 
   const returnToParam = returnTo ? `?return_to=${encodeURIComponent(returnTo)}` : "";
