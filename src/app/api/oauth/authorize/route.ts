@@ -29,9 +29,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid redirect_uri' }, { status: 400 });
   }
 
+  const prompt = params.get('prompt');
   const session = await getServerSession(authOptions);
 
-  if (!session?.user?.id) {
+  if (!session?.user?.id || prompt === 'login') {
     const returnTo = req.nextUrl.pathname + '?' + params.toString();
     const loginUrl = new URL('/login', req.nextUrl.origin);
     loginUrl.searchParams.set('return_to', returnTo);
