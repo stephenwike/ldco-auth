@@ -3,9 +3,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import clientPromise from "@/lib/mongo";
 import bcrypt from "bcrypt";
-import { ObjectId } from "mongodb";
-
-import { isAlphaAllowed } from "@/lib/alphaAllowList";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -30,9 +27,6 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
-
-        // ✅ ALPHA: block login for non-approved emails
-        if (!isAlphaAllowed(credentials.email)) return null;
 
         const client = await clientPromise;
         if (!client) return null;
@@ -75,10 +69,7 @@ export const authOptions: AuthOptions = {
   session: { strategy: "jwt" },
 
   callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider === 'google') {
-        return isAlphaAllowed(user.email ?? undefined);
-      }
+    async signIn() {
       return true;
     },
     async jwt({ token, user, account }) {
@@ -100,12 +91,10 @@ export const authOptions: AuthOptions = {
           token.email = dbUser.email as string;
           token.name = (dbUser.name ?? user.name) as string;
         }
-        token.alphaAllowed = true;
       } else if (user) {
         token.id = user.id as string;
         token.email = user.email as string;
         token.name = user.name as string;
-        token.alphaAllowed = true;
       }
       return token;
     },
@@ -117,8 +106,6 @@ export const authOptions: AuthOptions = {
           name: token.name as string,
         } as typeof session.user;
 
-        // ✅ ALPHA (optional): expose flag in session for UI if you use it
-        (session as any).alphaAllowed = (token as any).alphaAllowed ?? false;
       }
       return session;
     },

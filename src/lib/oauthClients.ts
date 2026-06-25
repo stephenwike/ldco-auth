@@ -11,6 +11,7 @@ const clients: OAuthClient[] = [
     clientSecret: process.env.OAUTH_CLIENT_DJFEED_SECRET ?? '',
     redirectUris: [
       'http://localhost:4000/api/auth/callback/ldco',
+      'http://127.0.0.1:4000/api/auth/callback/ldco',
       'https://feed.beyondlinedance.com/api/auth/callback/ldco',
     ],
     name: 'DanceCard DJ Feed',
