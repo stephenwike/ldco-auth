@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     user = await mongo
       .db('ldco')
       .collection('users')
-      .findOne({ _id: new ObjectId(userId) });
+      .findOne({ _id: userId as any });
   } catch (err) {
     console.error('[oauth/token] user lookup error:', err);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });
