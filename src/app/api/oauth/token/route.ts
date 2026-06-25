@@ -55,17 +55,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid_grant' }, { status: 400 });
   }
 
-  const mongo = await clientPromise;
-  if (!mongo) {
+  console.log('[oauth/token] userId from auth code:', userId);
+
+  let user;
+  try {
+    const mongo = await clientPromise;
+    if (!mongo) {
+      console.error('[oauth/token] MongoDB not connected');
+      return NextResponse.json({ error: 'server_error' }, { status: 500 });
+    }
+    user = await mongo
+      .db('ldco')
+      .collection('users')
+      .findOne({ _id: new ObjectId(userId) });
+  } catch (err) {
+    console.error('[oauth/token] user lookup error:', err);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });
   }
 
-  const user = await mongo
-    .db('ldco')
-    .collection('users')
-    .findOne({ _id: new ObjectId(userId) });
-
   if (!user) {
+    console.error('[oauth/token] user not found for id:', userId);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });
   }
 
