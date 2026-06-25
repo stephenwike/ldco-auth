@@ -18,7 +18,18 @@ export async function POST(req: NextRequest) {
     body = await req.json();
   }
 
-  const { grant_type, code, redirect_uri, client_id, client_secret } = body;
+  let { grant_type, code, redirect_uri, client_id, client_secret } = body;
+
+  // NextAuth sends client credentials via HTTP Basic auth header by default
+  const authHeader = req.headers.get('authorization') ?? '';
+  if (!client_id && authHeader.startsWith('Basic ')) {
+    const decoded = Buffer.from(authHeader.slice(6), 'base64').toString();
+    const sep = decoded.indexOf(':');
+    if (sep > 0) {
+      client_id = decodeURIComponent(decoded.slice(0, sep));
+      client_secret = decodeURIComponent(decoded.slice(sep + 1));
+    }
+  }
 
   console.log('[oauth/token] grant_type:', grant_type, 'client_id:', client_id, 'redirect_uri:', redirect_uri);
 
